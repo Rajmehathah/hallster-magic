@@ -96,6 +96,8 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-gradient-to-br from-[#1A1F2C] via-[#221F26] to-[#333333] text-white min-h-screen;
+    background-attachment: fixed;
+    background-size: cover;
   }
 }

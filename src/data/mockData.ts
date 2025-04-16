@@ -1,20 +1,4 @@
-
-import { Hall, BookingRequest, User } from "../types";
-
-export const mockUsers: User[] = [
-  {
-    id: "1",
-    name: "Admin User",
-    email: "admin@example.com",
-    role: "admin",
-  },
-  {
-    id: "2",
-    name: "Regular User",
-    email: "user@example.com",
-    role: "user",
-  },
-];
+import { Hall } from "../types";
 
 export const mockHalls: Hall[] = [
   {
@@ -58,6 +42,63 @@ export const mockHalls: Hall[] = [
     description: "A flexible space designed for brainstorming, design thinking, and collaborative workshops with cutting-edge technology.",
     pricePerHour: 85,
     availability: true,
+  },
+  {
+    id: "4",
+    name: "Auditorium of Excellence",
+    capacity: 300,
+    location: "Central Campus, Main Hall",
+    amenities: ["Stage Lighting", "Professional Sound System", "Green Room", "Large Projection Screens", "Livestreaming Capabilities"],
+    images: [
+      "https://images.unsplash.com/photo-1580130545376-e0cbda8cc411?auto=format&fit=crop&w=800",
+      "https://images.unsplash.com/photo-1617360547557-23f2c22ba679?auto=format&fit=crop&w=800"
+    ],
+    description: "A grand auditorium perfect for large-scale presentations, award ceremonies, and major academic events with world-class audiovisual capabilities.",
+    pricePerHour: 250,
+    availability: true,
+  },
+  {
+    id: "5",
+    name: "Creative Studio",
+    capacity: 40,
+    location: "Arts Building, 3rd Floor",
+    amenities: ["Artistic Lighting", "Soundproofing", "Multimedia Equipment", "Flexible Seating", "Green Screen"],
+    images: [
+      "https://images.unsplash.com/photo-1522542550221-31fd19575a2d?auto=format&fit=crop&w=800",
+      "https://images.unsplash.com/photo-1603297638244-ba28f3b42ad1?auto=format&fit=crop&w=800"
+    ],
+    description: "A versatile creative space designed for workshops, media production, art exhibitions, and innovative team-building sessions.",
+    pricePerHour: 95,
+    availability: true,
+  },
+  {
+    id: "6",
+    name: "Panoramic Meeting Suite",
+    capacity: 60,
+    location: "Skyline Tower, Top Floor",
+    amenities: ["Panoramic City Views", "Telepresence Systems", "Catering Kitchen", "Private Terrace", "Executive Catering"],
+    images: [
+      "https://images.unsplash.com/photo-1571624436279-c19059aba9e1?auto=format&fit=crop&w=800",
+      "https://images.unsplash.com/photo-1556761175-4b46a3fb44de?auto=format&fit=crop&w=800"
+    ],
+    description: "An exclusive meeting suite with breathtaking city views, perfect for high-level executive meetings and prestigious corporate events.",
+    pricePerHour: 200,
+    availability: true,
+  }
+];
+
+export const mockUsers: User[] = [
+  {
+    id: "1",
+    name: "Admin User",
+    email: "admin@example.com",
+    role: "admin",
+  },
+  {
+    id: "2",
+    name: "Regular User",
+    email: "user@example.com",
+    role: "user",
   },
 ];
 
