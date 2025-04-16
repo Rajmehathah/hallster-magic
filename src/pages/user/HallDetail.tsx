@@ -195,7 +195,7 @@ const HallDetail = () => {
                 
                 <Button 
                   onClick={() => setIsBookingDialogOpen(true)} 
-                  className="w-full"
+                  className="w-full bg-purple hover:bg-purple-dark"
                   disabled={!hall.availability}
                 >
                   Book This Hall
@@ -311,7 +311,7 @@ const HallDetail = () => {
                 <Button type="button" variant="outline" onClick={() => setIsBookingDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit">Submit Request</Button>
+                <Button type="submit" className="bg-purple hover:bg-purple-dark">Submit Request</Button>
               </DialogFooter>
             </form>
           )}
