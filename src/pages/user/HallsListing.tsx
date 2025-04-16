@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Navbar from "@/components/Navbar";
-import { Search, Users, MapPin } from "lucide-react";
+import { Search, Users, MapPin, Clock, Calendar, Sparkles } from "lucide-react";
 
 const HallsListing = () => {
   const { halls } = useBooking();
@@ -42,28 +42,38 @@ const HallsListing = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <Navbar />
-      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Available Seminar Halls</h1>
+      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 animate-fade-in">
+        <div className="flex flex-col md:flex-row items-center justify-between mb-8">
+          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-purple-300 mb-4 md:mb-0">
+            Discover Our Seminar Halls
+          </h1>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="bg-purple/20 border-purple/30 text-white">
+              <Sparkles className="h-3.5 w-3.5 mr-1" />
+              {sortedHalls.length} Halls Available
+            </Badge>
+          </div>
+        </div>
         
         {/* Search and Filter Section */}
-        <div className="mb-8 flex flex-col md:flex-row gap-4">
+        <div className="mb-8 flex flex-col md:flex-row gap-4 animate-fade-in" style={{animationDelay: "0.1s"}}>
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               placeholder="Search halls by name or location..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 bg-gray-900/50 border-gray-700 text-white"
             />
           </div>
           <div className="md:w-64">
             <Select value={sortOption} onValueChange={setSortOption}>
-              <SelectTrigger>
+              <SelectTrigger className="bg-gray-900/50 border-gray-700 text-white">
                 <SelectValue placeholder="Sort by..." />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-gray-800 text-white border-gray-700">
                 <SelectItem value="name-asc">Name (A-Z)</SelectItem>
                 <SelectItem value="name-desc">Name (Z-A)</SelectItem>
                 <SelectItem value="capacity-asc">Capacity (Low to High)</SelectItem>
@@ -77,18 +87,19 @@ const HallsListing = () => {
         
         {/* Halls Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sortedHalls.map((hall) => (
+          {sortedHalls.map((hall, index) => (
             <Link
               key={hall.id}
               to={`/halls/${hall.id}`}
-              className="transform transition-transform duration-300 hover:scale-[1.02] focus:outline-none"
+              className="focus:outline-none"
             >
-              <Card className="h-full overflow-hidden hover:shadow-md hover:border-purple/30 transition-all">
+              <Card className="h-full overflow-hidden border-gray-700/50 bg-gray-900/40 backdrop-blur-sm hover-card-scale animate-fade-in animate-float hover:border-purple/30"
+                style={{animationDelay: `${index * 0.05}s`}}>
                 <div className="aspect-w-16 aspect-h-9 relative overflow-hidden h-48">
                   <img
                     src={hall.images[0]}
                     alt={hall.name}
-                    className="object-cover w-full h-full"
+                    className="object-cover w-full h-full transition-transform hover:scale-105 duration-700"
                   />
                   {hall.availability ? (
                     <Badge className="absolute top-3 right-3 bg-green-500 hover:bg-green-600">Available</Badge>
@@ -97,36 +108,47 @@ const HallsListing = () => {
                   )}
                 </div>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-xl">{hall.name}</CardTitle>
-                  <div className="flex items-center text-gray-500 text-sm">
-                    <MapPin size={14} className="mr-1" />
+                  <div className="flex justify-between items-start">
+                    <CardTitle className="text-xl font-bold text-white">{hall.name}</CardTitle>
+                    <div className="text-lg font-bold text-purple">
+                      ${hall.pricePerHour}
+                      <span className="text-xs text-gray-400">/hr</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center text-gray-300 text-sm mt-1">
+                    <MapPin size={14} className="mr-1 text-purple-300" />
                     {hall.location}
                   </div>
                 </CardHeader>
-                <CardContent className="pb-4">
-                  <div className="flex items-center text-sm mb-2">
-                    <Users size={16} className="mr-2 text-gray-500" />
-                    <span>Capacity: {hall.capacity} people</span>
-                  </div>
-                  <p className="text-sm text-gray-600 line-clamp-2">{hall.description}</p>
-                </CardContent>
-                <CardFooter className="pt-0 border-t text-sm text-gray-600">
-                  <div className="w-full flex justify-between items-center">
-                    <div className="flex gap-2">
-                      {hall.amenities.slice(0, 2).map((amenity, index) => (
-                        <Badge key={index} variant="outline" className="bg-blue-soft/50">
-                          {amenity}
-                        </Badge>
-                      ))}
-                      {hall.amenities.length > 2 && (
-                        <Badge variant="outline" className="bg-blue-soft/50">
-                          +{hall.amenities.length - 2} more
-                        </Badge>
-                      )}
+                <CardContent className="pb-2 space-y-3">
+                  <div className="flex items-center text-sm space-x-4">
+                    <div className="flex items-center">
+                      <Users size={15} className="mr-1.5 text-purple-300" />
+                      <span>{hall.capacity}</span>
                     </div>
-                    <span className="font-medium text-purple-dark">
-                      ${hall.pricePerHour}/hr
-                    </span>
+                    <div className="flex items-center">
+                      <Calendar size={15} className="mr-1.5 text-purple-300" />
+                      <span>Always open</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-300 line-clamp-2">{hall.description}</p>
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {hall.amenities.slice(0, 3).map((amenity, index) => (
+                      <Badge key={index} variant="outline" className="bg-purple/10 border-purple/20 text-gray-200 text-xs">
+                        {amenity}
+                      </Badge>
+                    ))}
+                    {hall.amenities.length > 3 && (
+                      <Badge variant="outline" className="bg-purple/10 border-purple/20 text-gray-200 text-xs">
+                        +{hall.amenities.length - 3} more
+                      </Badge>
+                    )}
+                  </div>
+                </CardContent>
+                <CardFooter className="pt-0 mt-2">
+                  <div className="w-full flex justify-between items-center">
+                    <span className="text-xs text-gray-400">ID: {hall.id}</span>
+                    <Badge className="bg-purple hover:bg-purple-dark">View Details</Badge>
                   </div>
                 </CardFooter>
               </Card>
@@ -135,9 +157,9 @@ const HallsListing = () => {
         </div>
 
         {sortedHalls.length === 0 && (
-          <div className="text-center py-10">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No halls found</h3>
-            <p className="text-gray-500">Try adjusting your search criteria</p>
+          <div className="text-center py-10 animate-fade-in">
+            <h3 className="text-lg font-medium text-white mb-2">No halls found</h3>
+            <p className="text-gray-400">Try adjusting your search criteria</p>
           </div>
         )}
       </div>
