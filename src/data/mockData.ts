@@ -1,4 +1,5 @@
-import { Hall } from "../types";
+
+import { Hall, User, BookingRequest } from "../types";
 
 export const mockHalls: Hall[] = [
   {
