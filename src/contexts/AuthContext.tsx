@@ -1,12 +1,13 @@
 
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { User, UserRole } from "../types";
-import { mockUsers } from "../data/mockData";
+import { User } from "../types";
+import { supabase } from "@/integrations/supabase/client";
+import { Session } from "@supabase/supabase-js";
 
 interface AuthContextType {
   currentUser: User | null;
-  login: (email: string, password: string, role: UserRole) => boolean;
-  logout: () => void;
+  login: (email: string, password: string, role: string) => Promise<boolean>;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
 }
 
@@ -22,31 +23,63 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  
-  // Check for stored user on initial load
+  const [session, setSession] = useState<Session | null>(null);
+
   useEffect(() => {
-    const storedUser = localStorage.getItem("currentUser");
-    if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
-    }
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        if (session?.user) {
+          setCurrentUser({
+            id: session.user.id,
+            email: session.user.email || "",
+            name: session.user.user_metadata.name || "",
+            role: session.user.user_metadata.role || "user"
+          });
+        } else {
+          setCurrentUser(null);
+        }
+      }
+    );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setCurrentUser({
+          id: session.user.id,
+          email: session.user.email || "",
+          name: session.user.user_metadata.name || "",
+          role: session.user.user_metadata.role || "user"
+        });
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = (email: string, password: string, role: UserRole): boolean => {
-    // In a real app, you would validate the password
-    // For demo purposes, we're just checking if the user exists with that email and role
-    const user = mockUsers.find(u => u.email === email && u.role === role);
-    
-    if (user) {
-      setCurrentUser(user);
-      localStorage.setItem("currentUser", JSON.stringify(user));
+  const login = async (email: string, password: string, role: string) => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) throw error;
       return true;
+    } catch (error) {
+      console.error("Error logging in:", error);
+      return false;
     }
-    return false;
   };
 
-  const logout = () => {
-    setCurrentUser(null);
-    localStorage.removeItem("currentUser");
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setCurrentUser(null);
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
   };
 
   return (

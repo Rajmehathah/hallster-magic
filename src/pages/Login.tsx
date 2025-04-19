@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarDays, Key, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -22,7 +23,7 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleAuth = (e: React.FormEvent) => {
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     
@@ -31,18 +32,39 @@ const Login = () => {
       return;
     }
 
-    // For demo purposes, we'll just use the login function
-    // In a real app, this would be handled by Supabase
-    const success = login(email, password, activeTab);
-    
-    if (success) {
-      toast({
-        title: `Successfully ${isLogin ? 'logged in' : 'registered'}!`,
-        description: `Welcome ${isLogin ? 'back' : ''} to SeminarBook`,
-      });
-      navigate(activeTab === "admin" ? "/admin/dashboard" : "/halls");
-    } else {
-      setError(isLogin ? "Invalid email or password" : "Registration failed");
+    try {
+      if (isLogin) {
+        const success = await login(email, password, activeTab);
+        if (success) {
+          toast({
+            title: "Successfully logged in!",
+            description: "Welcome back to SeminarBook",
+          });
+          navigate(activeTab === "admin" ? "/admin/dashboard" : "/halls");
+        } else {
+          setError("Invalid email or password");
+        }
+      } else {
+        const { error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              name,
+              role: activeTab,
+            },
+          },
+        });
+
+        if (signUpError) throw signUpError;
+
+        toast({
+          title: "Registration successful!",
+          description: "Please check your email to verify your account",
+        });
+      }
+    } catch (error: any) {
+      setError(error.message || "An error occurred");
     }
   };
 
