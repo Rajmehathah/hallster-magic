@@ -9,30 +9,40 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarDays, Key, User } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
+  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const [activeTab, setActiveTab] = useState<UserRole>("user");
   const [error, setError] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleAuth = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     
-    if (!email || !password) {
+    if (!email || !password || (!isLogin && !name)) {
       setError("All fields are required");
       return;
     }
-    
+
+    // For demo purposes, we'll just use the login function
+    // In a real app, this would be handled by Supabase
     const success = login(email, password, activeTab);
     
     if (success) {
+      toast({
+        title: `Successfully ${isLogin ? 'logged in' : 'registered'}!`,
+        description: `Welcome ${isLogin ? 'back' : ''} to SeminarBook`,
+      });
       navigate(activeTab === "admin" ? "/admin/dashboard" : "/halls");
     } else {
-      setError("Invalid email or password");
+      setError(isLogin ? "Invalid email or password" : "Registration failed");
     }
   };
 
@@ -50,7 +60,9 @@ const Login = () => {
               <CalendarDays size={40} className="text-purple" />
             </div>
             <CardTitle className="text-2xl font-bold">Seminar Hall Booking</CardTitle>
-            <CardDescription>Sign in to your account</CardDescription>
+            <CardDescription>
+              {isLogin ? "Sign in to your account" : "Create a new account"}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={handleTabChange}>
@@ -65,67 +77,57 @@ const Login = () => {
                 </TabsTrigger>
               </TabsList>
               
-              <TabsContent value="user">
-                <form onSubmit={handleLogin} className="space-y-4 mt-4">
+              <TabsContent value={activeTab}>
+                <form onSubmit={handleAuth} className="space-y-4 mt-4">
+                  {!isLogin && (
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Name</Label>
+                      <Input
+                        id="name"
+                        type="text"
+                        placeholder="Your name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                      />
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input 
-                      id="email" 
-                      type="email" 
-                      placeholder="user@example.com" 
-                      value={email} 
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder={`${activeTab}@example.com`}
+                      value={email}
                       onChange={(e) => setEmail(e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="password">Password</Label>
-                    <Input 
-                      id="password" 
-                      type="password" 
-                      placeholder="••••••••" 
-                      value={password} 
-                      onChange={(e) => setPassword(e.target.value)} 
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
                     />
                   </div>
                   {error && (
                     <div className="text-sm font-medium text-destructive">{error}</div>
                   )}
-                  <Button type="submit" className="w-full">Sign In as User</Button>
+                  <Button type="submit" className="w-full">
+                    {isLogin ? `Sign In as ${activeTab}` : `Register as ${activeTab}`}
+                  </Button>
                 </form>
-                <div className="mt-4 text-sm text-center text-muted-foreground">
-                  <p>Demo login: user@example.com (any password)</p>
+                <div className="mt-4 text-sm text-center">
+                  <button
+                    onClick={() => setIsLogin(!isLogin)}
+                    className="text-purple hover:underline"
+                  >
+                    {isLogin ? "Need an account? Register" : "Already have an account? Sign In"}
+                  </button>
                 </div>
-              </TabsContent>
-              
-              <TabsContent value="admin">
-                <form onSubmit={handleLogin} className="space-y-4 mt-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="admin-email">Email</Label>
-                    <Input 
-                      id="admin-email" 
-                      type="email" 
-                      placeholder="admin@example.com" 
-                      value={email} 
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="admin-password">Password</Label>
-                    <Input 
-                      id="admin-password" 
-                      type="password" 
-                      placeholder="••••••••" 
-                      value={password} 
-                      onChange={(e) => setPassword(e.target.value)} 
-                    />
-                  </div>
-                  {error && (
-                    <div className="text-sm font-medium text-destructive">{error}</div>
-                  )}
-                  <Button type="submit" className="w-full">Sign In as Admin</Button>
-                </form>
                 <div className="mt-4 text-sm text-center text-muted-foreground">
-                  <p>Demo login: admin@example.com (any password)</p>
+                  <p>Demo login: {activeTab}@example.com (any password)</p>
                 </div>
               </TabsContent>
             </Tabs>
