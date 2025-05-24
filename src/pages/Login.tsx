@@ -19,6 +19,7 @@ const Login = () => {
   const [name, setName] = useState("");
   const [activeTab, setActiveTab] = useState<UserRole>("user");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -26,9 +27,11 @@ const Login = () => {
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setIsLoading(true);
     
     if (!email || !password || (!isLogin && !name)) {
       setError("All fields are required");
+      setIsLoading(false);
       return;
     }
 
@@ -37,34 +40,49 @@ const Login = () => {
         const success = await login(email, password, activeTab);
         if (success) {
           toast({
-            title: "Successfully logged in!",
-            description: "Welcome back to SeminarBook",
+            title: "Welcome back!",
+            description: "You have successfully logged in.",
           });
           navigate(activeTab === "admin" ? "/admin/dashboard" : "/halls");
         } else {
           setError("Invalid email or password");
         }
       } else {
-        const { error: signUpError } = await supabase.auth.signUp({
+        // Registration flow
+        const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: {
             data: {
               name,
               role: activeTab,
+              first_name: name.split(' ')[0] || '',
+              last_name: name.split(' ').slice(1).join(' ') || '',
             },
           },
         });
 
-        if (signUpError) throw signUpError;
-
-        toast({
-          title: "Registration successful!",
-          description: "Please check your email to verify your account",
-        });
+        if (signUpError) {
+          if (signUpError.message.includes('already registered')) {
+            setError("This email is already registered. Please try logging in instead.");
+          } else {
+            setError(signUpError.message);
+          }
+        } else if (data.user) {
+          toast({
+            title: "Registration successful!",
+            description: "Your account has been created. You can now log in.",
+          });
+          // Switch to login mode after successful registration
+          setIsLogin(true);
+          setPassword("");
+          setError("");
+        }
       }
     } catch (error: any) {
       setError(error.message || "An error occurred");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -103,13 +121,14 @@ const Login = () => {
                 <form onSubmit={handleAuth} className="space-y-4 mt-4">
                   {!isLogin && (
                     <div className="space-y-2">
-                      <Label htmlFor="name">Name</Label>
+                      <Label htmlFor="name">Full Name</Label>
                       <Input
                         id="name"
                         type="text"
-                        placeholder="Your name"
+                        placeholder="Enter your full name"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
+                        required={!isLogin}
                       />
                     </div>
                   )}
@@ -118,9 +137,10 @@ const Login = () => {
                     <Input
                       id="email"
                       type="email"
-                      placeholder={`${activeTab}@example.com`}
+                      placeholder="Enter your email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      required
                     />
                   </div>
                   <div className="space-y-2">
@@ -128,37 +148,43 @@ const Login = () => {
                     <Input
                       id="password"
                       type="password"
-                      placeholder="••••••••"
+                      placeholder="Enter your password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={6}
                     />
+                    {!isLogin && (
+                      <p className="text-xs text-muted-foreground">
+                        Password must be at least 6 characters long
+                      </p>
+                    )}
                   </div>
                   {error && (
-                    <div className="text-sm font-medium text-destructive">{error}</div>
+                    <div className="text-sm font-medium text-destructive bg-destructive/10 p-3 rounded-md">
+                      {error}
+                    </div>
                   )}
-                  <Button type="submit" className="w-full">
-                    {isLogin ? `Sign In as ${activeTab}` : `Register as ${activeTab}`}
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? "Processing..." : isLogin ? `Sign In as ${activeTab}` : `Register as ${activeTab}`}
                   </Button>
                 </form>
                 <div className="mt-4 text-sm text-center">
                   <button
-                    onClick={() => setIsLogin(!isLogin)}
+                    onClick={() => {
+                      setIsLogin(!isLogin);
+                      setError("");
+                      setPassword("");
+                    }}
                     className="text-purple hover:underline"
+                    disabled={isLoading}
                   >
-                    {isLogin ? "Need an account? Register" : "Already have an account? Sign In"}
+                    {isLogin ? "Need an account? Register here" : "Already have an account? Sign in"}
                   </button>
-                </div>
-                <div className="mt-4 text-sm text-center text-muted-foreground">
-                  <p>Demo login: {activeTab}@example.com (any password)</p>
                 </div>
               </TabsContent>
             </Tabs>
           </CardContent>
-          <CardFooter>
-            <div className="text-sm text-center w-full text-muted-foreground">
-              <p>This is a demo application. No real authentication is performed.</p>
-            </div>
-          </CardFooter>
         </Card>
       </div>
     </div>
